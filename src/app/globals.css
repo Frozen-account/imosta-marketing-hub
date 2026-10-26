@@ -1,0 +1,22 @@
+@import "tailwindcss";
+
+/* IMOSTA brand palette (see IMOSTA-SSOT.md §2). Tailwind v4 reads theme tokens from CSS. */
+@theme {
+  --font-sans: var(--font-montserrat), ui-sans-serif, system-ui, sans-serif;
+
+  --color-brand: #d11329;
+  --color-brand-dark: #a80f21;
+  --color-brand-soft: #fde8eb;
+  --color-ink: #151515;
+  --color-ink-muted: #5f5f5f;
+  --color-ink-subtle: #4b5563;
+  --color-surface: #ffffff;
+  --color-canvas: #f8f9fa;
+  --color-line: #e5e7eb;
+  --color-muted: #f3f4f6;
+}
+
+body {
+  background: var(--color-canvas);
+  color: var(--color-ink);
+}
