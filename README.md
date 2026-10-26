@@ -8,13 +8,22 @@ Knowledge base and internal Command Center for the IMOSTA digital marketing team
 
 ## Command Center
 
-| Route        | View                                                   |
-| ------------ | ------------------------------------------------------ |
-| `/tasks`     | Kanban board (agent: Claude / Gemini / Human; category: Meta Ads, Reels, Blog, Forms) |
-| `/analytics` | Lead counter and UTM attribution table                 |
-| `/content`   | Weekly content calendar (Mon–Sun)                      |
+| Route        | View                                   | Data source            |
+| ------------ | -------------------------------------- | ---------------------- |
+| `/tasks`     | Kanban: Backlog → In Progress → Review → Done | `backlog/tasks.json` |
+| `/projects`  | Markdown documentation reader          | `projects/*.md`        |
+| `/content`   | Weekly calendar (Mon–Sun): Idea → Scripted → Recorded → Published | `content/calendar.json` |
+| `/analytics` | Lead counter and UTM attribution table | demo data (`src/lib/mock-data.ts`) |
 
-Data is mock (`src/lib/mock-data.ts`). Task board changes persist in the browser's localStorage only.
+Data is Git-driven: edit the files, commit, push — Vercel rebuilds and the dashboard updates.
+Files are validated at build time (`src/lib/data.ts`); an invalid status, assignee, project or date fails the build with the file and entry index.
+
+Allowed values (see `src/lib/types.ts`):
+- task `status`: `backlog`, `in_progress`, `review`, `done` · `priority`: `high`, `medium`, `low`
+- `assignee` / `owner`: `Claude`, `Gemini`, `Human` · `project`: `JDG`, `Spolka`, `Meta Ads`, `Webinar`, `Forms`
+- content `format`: `Reels`, `Screen recording`, `Blog` · `status`: `idea`, `scripted`, `recorded`, `published`
+- `projects/*.md` may start with a `---` block containing `title:` and `summary:`
+
 Brand tokens (`brand`, `ink`, `canvas`, …) are defined in `src/app/globals.css` under `@theme`.
 
 ```bash

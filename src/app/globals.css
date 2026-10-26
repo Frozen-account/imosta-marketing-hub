@@ -1,4 +1,5 @@
 @import "tailwindcss";
+@plugin "@tailwindcss/typography";
 
 /* IMOSTA brand palette (see IMOSTA-SSOT.md §2). Tailwind v4 reads theme tokens from CSS. */
 @theme {

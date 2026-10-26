@@ -1,24 +1,22 @@
 "use client";
 
 import { useEffect, useState } from "react";
-import { ChevronLeft, ChevronRight, FileText, Film, Images, Smartphone } from "lucide-react";
-import { contentPlan } from "@/lib/mock-data";
-import type { ContentFormat, ContentState } from "@/lib/types";
+import { ChevronLeft, ChevronRight, FileText, Film, MonitorPlay } from "lucide-react";
+import { CONTENT_STATUSES, type ContentFormat, type ContentItem, type ContentStatus } from "@/lib/types";
 
 const WEEKDAYS = ["Понедельник", "Вторник", "Среда", "Четверг", "Пятница", "Суббота", "Воскресенье"];
 
 const FORMAT: Record<ContentFormat, { icon: typeof Film; cls: string }> = {
   Reels: { icon: Film, cls: "border-l-brand" },
+  "Screen recording": { icon: MonitorPlay, cls: "border-l-blue-600" },
   Blog: { icon: FileText, cls: "border-l-ink" },
-  Stories: { icon: Smartphone, cls: "border-l-amber-500" },
-  Carousel: { icon: Images, cls: "border-l-blue-600" },
 };
 
-const STATE: Record<ContentState, { label: string; cls: string }> = {
-  idea: { label: "Идея", cls: "bg-muted text-ink-subtle" },
-  draft: { label: "Черновик", cls: "bg-amber-50 text-amber-800" },
-  ready: { label: "Готово", cls: "bg-emerald-50 text-emerald-800" },
-  published: { label: "Опубликовано", cls: "bg-ink text-white" },
+const STATUS: Record<ContentStatus, { label: string; cls: string }> = {
+  idea: { label: "Idea", cls: "bg-muted text-ink-subtle ring-line" },
+  scripted: { label: "Scripted", cls: "bg-amber-50 text-amber-800 ring-amber-200" },
+  recorded: { label: "Recorded", cls: "bg-blue-50 text-blue-800 ring-blue-200" },
+  published: { label: "Published", cls: "bg-emerald-50 text-emerald-800 ring-emerald-200" },
 };
 
 function mondayOf(d: Date) {
@@ -27,16 +25,20 @@ function mondayOf(d: Date) {
   return m;
 }
 
-export function ContentCalendar() {
+function iso(d: Date) {
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+}
+
+export function ContentCalendar({ items }: { items: ContentItem[] }) {
   // The week is resolved in the browser so prerendering never depends on the build date.
   const [monday, setMonday] = useState<Date | null>(null);
-  const [today, setToday] = useState<string>("");
+  const [today, setToday] = useState("");
 
   useEffect(() => {
     const now = new Date();
     // eslint-disable-next-line react-hooks/set-state-in-effect -- client-only date
     setMonday(mondayOf(now));
-    setToday(now.toDateString());
+    setToday(iso(now));
   }, []);
 
   const shiftWeek = (weeks: number) =>
@@ -44,9 +46,10 @@ export function ContentCalendar() {
 
   const days = WEEKDAYS.map((name, i) => {
     const date = monday ? new Date(monday.getFullYear(), monday.getMonth(), monday.getDate() + i) : null;
-    return { name, i, date };
+    return { name, i, date, key: date ? iso(date) : "" };
   });
   const fmt = (d: Date) => d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  const weekCount = items.filter((c) => days.some((d) => d.key === c.date)).length;
 
   return (
     <div>
@@ -58,19 +61,21 @@ export function ContentCalendar() {
           </span>
           <button onClick={() => shiftWeek(1)} aria-label="Следующая неделя" className="p-2 text-ink-muted hover:text-brand"><ChevronRight className="size-4" /></button>
         </div>
-        <div className="flex flex-wrap gap-3 text-xs text-ink-muted">
-          {(Object.keys(FORMAT) as ContentFormat[]).map((f) => {
-            const Icon = FORMAT[f].icon;
-            return <span key={f} className="inline-flex items-center gap-1"><Icon className="size-3.5" aria-hidden />{f}</span>;
-          })}
-        </div>
-        <span className="ml-auto rounded-lg bg-brand-soft px-3 py-1.5 text-xs font-bold uppercase tracking-wider text-brand">Шаблон недели · демо</span>
+        {monday && <span className="text-sm text-ink-muted">{weekCount} публикаций на неделе</span>}
+        <ol className="ml-auto flex flex-wrap items-center gap-1 text-xs" aria-label="Этапы">
+          {CONTENT_STATUSES.map((s, i) => (
+            <li key={s} className="inline-flex items-center gap-1">
+              {i > 0 && <span className="text-ink-muted" aria-hidden>→</span>}
+              <span className={`rounded-full px-2 py-0.5 font-semibold ring-1 ${STATUS[s].cls}`}>{STATUS[s].label}</span>
+            </li>
+          ))}
+        </ol>
       </div>
 
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-7">
-        {days.map(({ name, i, date }) => {
-          const items = contentPlan.filter((c) => c.weekday === i).sort((a, b) => (a.time ?? "").localeCompare(b.time ?? ""));
-          const isToday = date?.toDateString() === today;
+        {days.map(({ name, i, date, key }) => {
+          const dayItems = items.filter((c) => c.date === key).sort((a, b) => (a.time ?? "").localeCompare(b.time ?? ""));
+          const isToday = key !== "" && key === today;
           return (
             <section key={name} className={`flex min-h-40 flex-col rounded-xl border bg-surface p-3 shadow-sm ${isToday ? "border-brand ring-1 ring-brand" : "border-line"}`}>
               <header className="mb-3 flex items-baseline justify-between">
@@ -78,7 +83,7 @@ export function ContentCalendar() {
                 {date && <span className={`text-xs tabular-nums ${isToday ? "font-bold text-brand" : "text-ink-muted"}`}>{fmt(date)}</span>}
               </header>
               <div className="flex flex-col gap-2">
-                {items.map((c) => {
+                {dayItems.map((c) => {
                   const Icon = FORMAT[c.format].icon;
                   return (
                     <article key={c.id} className={`rounded-lg border border-line border-l-4 bg-canvas p-2.5 transition-all duration-200 hover:shadow-md ${FORMAT[c.format].cls}`}>
@@ -89,11 +94,11 @@ export function ContentCalendar() {
                       </div>
                       <h3 className="text-sm font-semibold leading-snug">{c.title}</h3>
                       <p className="mt-1 text-xs text-ink-muted">{c.channel} · {c.owner}</p>
-                      <span className={`mt-2 inline-block rounded px-1.5 py-0.5 text-[11px] font-semibold ${STATE[c.state].cls}`}>{STATE[c.state].label}</span>
+                      <span className={`mt-2 inline-block rounded-full px-2 py-0.5 text-[11px] font-semibold ring-1 ${STATUS[c.status].cls}`}>{STATUS[c.status].label}</span>
                     </article>
                   );
                 })}
-                {items.length === 0 && <p className="py-4 text-center text-xs text-ink-muted">Нет публикаций</p>}
+                {date && dayItems.length === 0 && <p className="py-4 text-center text-xs text-ink-muted">Нет публикаций</p>}
               </div>
             </section>
           );

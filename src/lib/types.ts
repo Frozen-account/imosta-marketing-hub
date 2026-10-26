@@ -1,17 +1,47 @@
-export type Agent = "Claude" | "Gemini" | "Human";
-export type Category = "Meta Ads" | "Reels" | "Blog" | "Forms";
-export type Priority = "high" | "medium" | "low";
-export type Status = "backlog" | "todo" | "in_progress" | "review" | "done";
+export const STATUSES = ["backlog", "in_progress", "review", "done"] as const;
+export const PRIORITIES = ["high", "medium", "low"] as const;
+export const ASSIGNEES = ["Claude", "Gemini", "Human"] as const;
+export const PROJECTS = ["JDG", "Spolka", "Meta Ads", "Webinar", "Forms"] as const;
+
+export type Status = (typeof STATUSES)[number];
+export type Priority = (typeof PRIORITIES)[number];
+export type Assignee = (typeof ASSIGNEES)[number];
+export type Project = (typeof PROJECTS)[number];
 
 export interface Task {
   id: string;
   title: string;
-  description?: string;
-  agent: Agent;
-  category: Category;
-  priority: Priority;
   status: Status;
-  due?: string; // ISO date, YYYY-MM-DD
+  priority: Priority;
+  assignee: Assignee;
+  project: Project;
+  tags: string[];
+  notes?: string;
+  due?: string; // YYYY-MM or YYYY-MM-DD
+}
+
+export const CONTENT_FORMATS = ["Reels", "Screen recording", "Blog"] as const;
+export const CONTENT_STATUSES = ["idea", "scripted", "recorded", "published"] as const;
+
+export type ContentFormat = (typeof CONTENT_FORMATS)[number];
+export type ContentStatus = (typeof CONTENT_STATUSES)[number];
+
+export interface ContentItem {
+  id: string;
+  date: string; // YYYY-MM-DD
+  time?: string;
+  format: ContentFormat;
+  title: string;
+  channel: string;
+  owner: Assignee;
+  status: ContentStatus;
+}
+
+export interface ProjectDoc {
+  slug: string;
+  title: string;
+  summary: string;
+  body: string;
 }
 
 export type LeadSegment = "JDG" | "Spolka" | "Консультация";
@@ -24,18 +54,4 @@ export interface Lead {
   utm_medium: string;
   utm_campaign: string;
   utm_content?: string;
-}
-
-export type ContentFormat = "Reels" | "Blog" | "Stories" | "Carousel";
-export type ContentState = "idea" | "draft" | "ready" | "published";
-
-export interface ContentItem {
-  id: string;
-  weekday: number; // 0 = Monday … 6 = Sunday
-  time?: string;
-  format: ContentFormat;
-  title: string;
-  channel: string;
-  owner: Agent;
-  state: ContentState;
 }

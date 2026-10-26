@@ -1,0 +1,49 @@
+[
+  {
+    "id": "utm-attribution",
+    "title": "Fix UTM attribution & Telegram alert formatting in imosta-jdg and imosta-landing",
+    "status": "review",
+    "priority": "high",
+    "assignee": "Claude",
+    "project": "Forms",
+    "tags": ["utm", "telegram", "meta-ads-readiness"],
+    "notes": "Merged to main in both repos (jdg acd7674, landing 44b37d8). Remaining: live test lead with UTMs after deploy."
+  },
+  {
+    "id": "meta-copy-packs",
+    "title": "Draft 4 Meta Ads copy packs & creative briefs for JDG and Spolka (RU/EN)",
+    "status": "in_progress",
+    "priority": "high",
+    "assignee": "Gemini",
+    "project": "Meta Ads",
+    "tags": ["copy", "creative-brief", "ru", "en"]
+  },
+  {
+    "id": "screen-recording-scripts",
+    "title": "Write 3 accountant screen-recording video scripts",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Gemini",
+    "project": "JDG",
+    "tags": ["video", "script", "screen-recording"]
+  },
+  {
+    "id": "deploy-hub",
+    "title": "Deploy imosta-marketing-hub to Vercel and verify dashboard",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "Forms",
+    "tags": ["vercel", "deployment-protection"]
+  },
+  {
+    "id": "pl-expansion",
+    "title": "Launch Polish market expansion and /pl/ localization",
+    "status": "backlog",
+    "priority": "low",
+    "assignee": "Human",
+    "project": "JDG",
+    "tags": ["pl", "localization"],
+    "due": "2026-12"
+  }
+]
