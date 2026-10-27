@@ -48,10 +48,12 @@ const HARD_SKILLS = [
 ];
 
 // Day = IMOSTA internal SLA; statutory = legal deadline the SLA must stay ahead of.
+// Each target leaves the client at least 5 days to pay before the statutory deadline.
 const RHYTHM = [
   { day: "5th", title: "Documents uploaded", detail: "Client uploads all invoices, statements and receipts to the portal.", statutory: "—" },
-  { day: "15th", title: "ZUS calculated & sent to client", detail: "Contribution amounts and transfer details delivered.", statutory: "ZUS payment: 20th" },
-  { day: "20th", title: "PIT / CIT / VAT sent to client", detail: "Full breakdown per tax with micro-account transfer guide.", statutory: "PIT / CIT advance: 20th · VAT (JPK_V7): 25th" },
+  { day: "12th", title: "ZUS sent to client", detail: "Contribution amounts and ZUS transfer details delivered.", statutory: "ZUS payment: 20th" },
+  { day: "15th", title: "PIT / CIT sent to client", detail: "Advance amounts with micro-account transfer guide.", statutory: "PIT / CIT advance: 20th" },
+  { day: "20th", title: "VAT / JPK_V7 sent to client", detail: "VAT amount, JPK_V7 filed, transfer guide.", statutory: "VAT & JPK_V7: 25th" },
 ];
 
 function Section({ n, title, icon: Icon, children }: { n: number; title: string; icon: typeof Target; children: React.ReactNode }) {
@@ -225,7 +227,7 @@ export default function EnglishExpansionPage() {
 
           <Card>
             <h3 className="mb-4 font-bold">Monthly tax rhythm</h3>
-            <ol className="relative flex flex-col gap-5 border-l-2 border-line pl-6 md:grid md:grid-cols-3 md:gap-4 md:border-l-0 md:border-t-2 md:pl-0 md:pt-6">
+            <ol className="relative flex flex-col gap-5 border-l-2 border-line pl-6 md:grid md:grid-cols-4 md:gap-4 md:border-l-0 md:border-t-2 md:pl-0 md:pt-6">
               {RHYTHM.map((r) => (
                 <li key={r.day} className="relative">
                   <span className="absolute -left-[33px] top-0.5 size-4 rounded-full border-4 border-surface bg-brand md:-top-[33px] md:left-0" aria-hidden />
