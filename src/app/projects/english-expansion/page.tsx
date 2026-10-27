@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import {
   AlertTriangle, ArrowLeft, ArrowRight, Banknote, Bot, Building2, CheckCircle2, FileUp, Globe2, Handshake, Languages,
-  Landmark, Lightbulb, Megaphone, Mic, MonitorPlay, ReceiptText, Rocket, Scale, Target, TrendingUp, UserRoundCog, Users, Waves,
+  Landmark, Lightbulb, Megaphone, Mic, MonitorPlay, ReceiptText, Rocket, Scale, Target, TrendingUp, UserRound, UserRoundCog, Users, Waves,
 } from "lucide-react";
 import { GlossaryTable, type GlossaryEntry } from "@/components/glossary-table";
 
@@ -166,6 +166,16 @@ export default function EnglishExpansionPage() {
         </nav>
       </header>
 
+      <div lang="ru" className="mb-10 rounded-xl border-2 border-amber-400 bg-amber-50 p-5 md:p-6">
+        <p className="flex items-center gap-2 font-extrabold text-amber-900">
+          <AlertTriangle className="size-5 shrink-0" aria-hidden /> Стратегические вопросы для проверки перед запуском:
+        </p>
+        <ol className="mt-3 flex list-decimal flex-col gap-2 pl-6 text-sm leading-relaxed text-ink">
+          <li>Может ли отдел саппорта тянуть английских клиентов (проверить у Ирины, как Алена и Виктория говорят/пишут на английском)?</li>
+          <li>Подходит ли текущий софт Taxo для загрузки фактур под англоязычную аудиторию (есть ли английский UI из коробки)?</li>
+        </ol>
+      </div>
+
       <div className="flex flex-col gap-12">
         <Section n={1} title="Strategy & market opportunity" icon={Target}>
           <div className="grid gap-4 md:grid-cols-2">
@@ -226,6 +236,10 @@ export default function EnglishExpansionPage() {
               <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">Front office</p>
               <h3 className="mt-1 font-bold">English Client Manager</h3>
               <p className="mt-1 text-sm text-ink-muted">Onboarding, calls, explaining obligations, single point of contact.</p>
+              <ul className="mt-3 flex flex-col gap-1.5 border-t border-line pt-3 text-sm">
+                <li className="flex gap-2"><UserRound className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden /><span><strong>Alena</strong> — primary manager for incoming leads and consultations</span></li>
+                <li className="flex gap-2"><FileUp className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden /><span><strong>Taxo</strong> — our sole paperless invoice upload portal</span></li>
+              </ul>
             </Card>
             <div className="flex items-center justify-center text-brand" aria-hidden>
               <span className="flex items-center gap-2 rounded-full bg-brand-soft px-3 py-1.5 text-xs font-bold uppercase tracking-wider">
@@ -294,7 +308,7 @@ export default function EnglishExpansionPage() {
             <FileUp className="mt-0.5 size-6 shrink-0 text-brand" aria-hidden />
             <div>
               <h3 className="font-bold">100% paperless client portal</h3>
-              <p className="mt-1 text-sm text-ink-muted">Clients drag & drop PDFs via Taxo / Saldeo. No paper, no email attachments.</p>
+              <p className="mt-1 text-sm text-ink-muted">Clients drag & drop PDFs via Taxo, our sole upload portal. No paper, no email attachments.</p>
             </div>
           </Card>
 
