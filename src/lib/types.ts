@@ -1,7 +1,7 @@
 export const STATUSES = ["backlog", "in_progress", "review", "done"] as const;
 export const PRIORITIES = ["high", "medium", "low"] as const;
 export const ASSIGNEES = ["Claude", "Gemini", "Human"] as const;
-export const PROJECTS = ["JDG", "Spolka", "Meta Ads", "Webinar", "Forms"] as const;
+export const PROJECTS = ["JDG", "Spolka", "Meta Ads", "Webinar", "Forms", "EN Expansion"] as const;
 
 export type Status = (typeof STATUSES)[number];
 export type Priority = (typeof PRIORITIES)[number];
@@ -18,6 +18,7 @@ export interface Task {
   tags: string[];
   notes?: string;
   due?: string; // YYYY-MM or YYYY-MM-DD
+  link?: string; // internal path, e.g. /projects/english-expansion
 }
 
 export const CONTENT_FORMATS = ["Reels", "Screen recording", "Blog"] as const;

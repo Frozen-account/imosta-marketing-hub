@@ -45,6 +45,8 @@ export function getTasks(): Task[] {
     if (!Array.isArray(tags) || tags.some((t) => typeof t !== "string")) fail(TASKS_FILE, i, `"tags" must be an array of strings`);
     const due = str(TASKS_FILE, i, r, "due", true);
     if (due && !/^\d{4}-\d{2}(-\d{2})?$/.test(due)) fail(TASKS_FILE, i, `"due" must be YYYY-MM or YYYY-MM-DD`);
+    const link = str(TASKS_FILE, i, r, "link", true);
+    if (link && !link.startsWith("/")) fail(TASKS_FILE, i, `"link" must be an internal path starting with /`);
     return {
       id: str(TASKS_FILE, i, r, "id")!,
       title: str(TASKS_FILE, i, r, "title")!,
@@ -55,6 +57,7 @@ export function getTasks(): Task[] {
       tags: tags as string[],
       notes: str(TASKS_FILE, i, r, "notes", true),
       due,
+      link,
     };
   });
 }

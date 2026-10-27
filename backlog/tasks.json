@@ -45,5 +45,16 @@
     "project": "JDG",
     "tags": ["pl", "localization"],
     "due": "2026-12"
+  },
+  {
+    "id": "english-expansion",
+    "title": "English-speaking expansion: approve strategy & hire Tandem team (EN Client Manager + Senior PL Accountant)",
+    "status": "backlog",
+    "priority": "high",
+    "assignee": "Human",
+    "project": "EN Expansion",
+    "tags": ["strategy", "hiring", "en", "spolka", "startups"],
+    "notes": "Offer from 1,200 PLN/mo. Confirm SLA vs statutory deadlines with Head of Accounting.",
+    "link": "/projects/english-expansion"
   }
 ]

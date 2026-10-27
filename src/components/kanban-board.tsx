@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Bot, CalendarClock, Sparkles, User } from "lucide-react";
+import Link from "next/link";
+import { Bot, CalendarClock, ExternalLink, Sparkles, User } from "lucide-react";
 import { ASSIGNEES, PROJECTS, type Assignee, type Priority, type Project, type Status, type Task } from "@/lib/types";
 
 const COLUMNS: { id: Status; title: string }[] = [
@@ -88,7 +89,13 @@ function TaskCard({ task }: { task: Task }) {
           {pr.label}
         </span>
       </div>
-      <h3 className="text-sm font-semibold leading-snug">{task.title}</h3>
+      <h3 className="text-sm font-semibold leading-snug">
+        {task.link ? (
+          <Link href={task.link} className="hover:text-brand hover:underline">
+            {task.title} <ExternalLink className="inline size-3 align-baseline text-ink-muted" aria-hidden />
+          </Link>
+        ) : task.title}
+      </h3>
       {task.notes && <p className="mt-1.5 text-xs leading-relaxed text-ink-muted">{task.notes}</p>}
       {task.tags.length > 0 && (
         <div className="mt-2.5 flex flex-wrap gap-1">

@@ -6,8 +6,13 @@ import { getProjectDocs } from "@/lib/data";
 
 export const metadata: Metadata = { title: "Проекты · IMOSTA Command Center" };
 
+// Pages with a custom UI under src/app/projects/<slug>/ rather than a projects/*.md file.
+const CUSTOM_PAGES = [
+  { slug: "english-expansion", title: "English-speaking expansion", summary: "Strategy & SOP: market pivot, Tandem team profile, hard skills, monthly SLA" },
+];
+
 export default function ProjectsPage() {
-  const docs = getProjectDocs();
+  const docs = [...CUSTOM_PAGES, ...getProjectDocs()];
   return (
     <>
       <PageHeader title="Проекты" subtitle="Документация из папки projects/ в репозитории" />
@@ -22,7 +27,7 @@ export default function ProjectsPage() {
             <h2 className="font-bold">{d.title}</h2>
             {d.summary && <p className="mt-1 flex-1 text-sm text-ink-muted">{d.summary}</p>}
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-ink-subtle group-hover:text-brand">
-              projects/{d.slug}.md <ArrowRight className="size-3.5" aria-hidden />
+              /projects/{d.slug} <ArrowRight className="size-3.5" aria-hidden />
             </span>
           </Link>
         ))}
