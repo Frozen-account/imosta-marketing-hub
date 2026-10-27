@@ -1,8 +1,8 @@
 import type { Metadata } from "next";
 import Link from "next/link";
 import {
-  AlertTriangle, ArrowLeft, Banknote, CheckCircle2, FileUp, Globe2, Handshake, Languages,
-  Landmark, Lightbulb, ReceiptText, Target, UserRoundCog, Users, Waves,
+  AlertTriangle, ArrowLeft, ArrowRight, Banknote, Bot, Building2, CheckCircle2, FileUp, Globe2, Handshake, Languages,
+  Landmark, Lightbulb, Megaphone, Mic, MonitorPlay, ReceiptText, Rocket, Scale, Target, TrendingUp, UserRoundCog, Users, Waves,
 } from "lucide-react";
 import { GlossaryTable, type GlossaryEntry } from "@/components/glossary-table";
 
@@ -56,6 +56,79 @@ const RHYTHM = [
   { day: "20th", title: "VAT / JPK_V7 sent to client", detail: "VAT amount, JPK_V7 filed, transfer guide.", statutory: "VAT & JPK_V7: 25th" },
 ];
 
+type Channel = {
+  title: string;
+  icon: typeof Target;
+  badges: string[];
+  items: string[];
+  people?: { name: string; role: string; focus: string }[];
+};
+
+const CHANNELS: Channel[] = [
+  {
+    title: "Meta Ads & English social boost",
+    icon: Megaphone,
+    badges: ["Paid", "Organic", "Facebook / Instagram"],
+    items: [
+      "High-signal English content: short Reels and carousels breaking down Polish tax traps for foreign founders.",
+      "Paid Meta Ads targeted at expats, foreign business owners and startup employees living in Poland.",
+    ],
+  },
+  {
+    title: "LinkedIn company page",
+    icon: Building2,
+    badges: ["Organic", "Brand", "LinkedIn"],
+    items: [
+      "Position IMOSTA as the go-to English-speaking boutique accounting firm in Poland.",
+      "Case studies, compliance updates (KSeF, Estoński CIT, WHT thresholds) and founder guides.",
+    ],
+  },
+  {
+    title: "Executive & team personal branding",
+    icon: Mic,
+    badges: ["Organic", "LinkedIn", "Ghostwritten with consent"],
+    items: [],
+    people: [
+      { name: "Oleg", role: "CEO", focus: "Thought leadership on doing business and scaling a Spółka z o.o. in Poland as an international entrepreneur." },
+      { name: "Tatsiana Bakayeva", role: "Chief Accountant", focus: "Technical authority: tax law nuances, cross-border VAT, direct answers to tricky compliance questions." },
+      { name: "Alena & Irina", role: "Managers", focus: "Customer success stories, onboarding highlights, day-to-day client problem solving." },
+    ],
+  },
+  {
+    title: "Cold outreach to funded tech startups",
+    icon: Rocket,
+    badges: ["Outbound", "B2B", "Poland / CEE"],
+    items: [
+      "Automated monitoring of funding rounds in Poland / CEE: MamStartup, PR Newswire, EU-Startups, Crunchbase.",
+      "Personalized founder-to-founder outreach offering a seamless transition to Polish accounting and corporate compliance after funding.",
+    ],
+  },
+  {
+    title: "Google Display on niche YouTube channels",
+    icon: MonitorPlay,
+    badges: ["Paid", "Google Ads", "Placements"],
+    items: [
+      "Banner and pre-roll ads placed only on selected expat and business YouTube channels.",
+      "Channel themes: moving to Poland, setting up an IT company, taxes in Poland.",
+    ],
+  },
+  {
+    title: "AI search optimization (GEO / AIO)",
+    icon: Bot,
+    badges: ["Organic", "ChatGPT · Claude · Perplexity"],
+    items: [
+      "Be indexed and recommended for prompts like “best English-speaking accounting firm in Warsaw for IT startups” or “accounting for foreigners in Poland”.",
+      "Citations, structured digital PR and authoritative directory backlinks.",
+    ],
+  },
+];
+
+const BADGE_STYLE: Record<string, string> = {
+  Paid: "bg-brand text-white ring-brand",
+  Organic: "bg-emerald-50 text-emerald-800 ring-emerald-200",
+  Outbound: "bg-blue-50 text-blue-800 ring-blue-200",
+};
+
 function Section({ n, title, icon: Icon, children }: { n: number; title: string; icon: typeof Target; children: React.ReactNode }) {
   return (
     <section className="scroll-mt-6" id={`s${n}`}>
@@ -87,7 +160,7 @@ export default function EnglishExpansionPage() {
           Moving from the saturated Russian-speaking market to international founders, expats and startups in Poland — and the team standard that makes it work.
         </p>
         <nav className="mt-5 flex flex-wrap gap-2 text-xs font-semibold" aria-label="Sections">
-          {["Strategy", "Team profile", "Hard skills", "Workflow & SLA"].map((s, i) => (
+          {["Strategy", "Team profile", "Hard skills", "Workflow & SLA", "Acquisition channels"].map((s, i) => (
             <a key={s} href={`#s${i + 1}`} className="rounded-lg bg-white/10 px-3 py-1.5 hover:bg-white/20">{i + 1}. {s}</a>
           ))}
         </nav>
@@ -242,6 +315,54 @@ export default function EnglishExpansionPage() {
               Days are IMOSTA internal targets. Statutory deadlines must be confirmed by the Head of Accounting before this SOP goes to clients.
             </p>
           </Card>
+        </Section>
+
+        <Section n={5} title="Acquisition channels & growth strategy" icon={TrendingUp}>
+          <p className="-mt-2 mb-4 text-sm text-ink-muted">Каналы привлечения · six channels for the English-speaking segment</p>
+          <div className="grid gap-4 md:grid-cols-2">
+            {CHANNELS.map(({ title, icon: Icon, badges, items, people }) => (
+              <Card key={title} className={`flex flex-col ${people ? "md:row-span-2" : ""}`}>
+                <div className="mb-3 flex items-start gap-3">
+                  <span className="flex size-10 shrink-0 items-center justify-center rounded-lg bg-brand-soft text-brand"><Icon className="size-5" aria-hidden /></span>
+                  <div>
+                    <h3 className="font-bold leading-snug">{title}</h3>
+                    <div className="mt-1.5 flex flex-wrap gap-1">
+                      {badges.map((b) => (
+                        <span key={b} className={`rounded-md px-2 py-0.5 text-[11px] font-semibold ring-1 ${BADGE_STYLE[b] ?? "bg-muted text-ink-subtle ring-line"}`}>{b}</span>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                {items.length > 0 && (
+                  <ul className="flex flex-col gap-2 text-sm">
+                    {items.map((it) => (
+                      <li key={it} className="flex gap-2"><ArrowRight className="mt-0.5 size-4 shrink-0 text-brand" aria-hidden /> {it}</li>
+                    ))}
+                  </ul>
+                )}
+                {people && (
+                  <ul className="flex flex-col gap-3">
+                    {people.map((p) => (
+                      <li key={p.name} className="rounded-lg bg-canvas p-3 ring-1 ring-line">
+                        <p className="text-sm font-bold">{p.name} <span className="ml-1 rounded bg-ink px-1.5 py-0.5 text-[11px] font-semibold text-white">{p.role}</span></p>
+                        <p className="mt-1 text-sm text-ink-subtle">{p.focus}</p>
+                      </li>
+                    ))}
+                  </ul>
+                )}
+              </Card>
+            ))}
+          </div>
+
+          <div className="mt-4 rounded-xl border-l-4 border-l-amber-500 bg-amber-50 p-5 text-sm">
+            <p className="mb-2 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-amber-800"><Scale className="size-4" aria-hidden /> Compliance check before launching outreach</p>
+            <ul className="flex list-disc flex-col gap-1 pl-5 text-ink-subtle">
+              <li>Polish law (Prawo komunikacji elektronicznej) requires prior consent for unsolicited commercial e-mail, B2B included. Open with a LinkedIn connection or a request for permission, not a sales e-mail — confirm with a lawyer.</li>
+              <li>Collecting founder contact data is GDPR processing: document the legitimate interest, inform on first contact, honour opt-outs.</li>
+              <li>Use official APIs or data licences (e.g. Crunchbase API) instead of scraping sites whose terms forbid it.</li>
+              <li>Ghostwritten posts are published only after the named person approves each one.</li>
+            </ul>
+          </div>
         </Section>
       </div>
     </div>
