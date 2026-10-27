@@ -244,8 +244,26 @@ export default function EnglishExpansionPage() {
             <Card className="border-l-4 border-l-emerald-600">
               <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-emerald-700"><Waves className="size-4" aria-hidden /> Solution · Blue Ocean</p>
               <p className="text-sm leading-relaxed">
-                Pivot into the English-speaking segment: international expats, founders from the <strong>EU, US, India and Turkey</strong>, e-commerce and tech startups.
+                Pivot into high-margin English-speaking business segments: founders from the <strong>UK, EU, US</strong>, and regional tech hubs (<strong>India, Turkey</strong>), international e-commerce, and VC-backed startups.
               </p>
+              <div className="mt-4 flex flex-col gap-2 text-sm">
+                <div className="rounded-lg bg-emerald-50 p-3 ring-1 ring-emerald-200">
+                  <p className="mb-0.5 flex items-center gap-2 font-bold">
+                    <span className="rounded bg-emerald-700 px-1.5 py-0.5 text-[11px] font-semibold text-white">Tier-1 focus</span> UK / US / EU
+                  </p>
+                  <p className="text-ink-subtle">High willingness to pay, post-Brexit EU branch setups, complex cross-border VAT & WHT compliance.</p>
+                </div>
+                <div className="rounded-lg bg-canvas p-3 ring-1 ring-line">
+                  <p className="mb-0.5 flex items-center gap-2 font-bold">
+                    <span className="rounded bg-ink px-1.5 py-0.5 text-[11px] font-semibold text-white">Emerging hubs</span> India, Turkey, Asia
+                  </p>
+                  <p className="text-ink-subtle">High-skilled IT contractors and tech founders with verified capital.</p>
+                  <p className="mt-2 flex gap-1.5 text-xs text-amber-900">
+                    <AlertTriangle className="mt-0.5 size-3.5 shrink-0" aria-hidden />
+                    Keep immigration / visa-driven inquiries segmented separately to protect banking compliance and operational bandwidth.
+                  </p>
+                </div>
+              </div>
             </Card>
           </div>
 
