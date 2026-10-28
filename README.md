@@ -20,10 +20,10 @@ Files are validated at build time (`src/lib/data.ts`); an invalid status, assign
 
 Allowed values (see `src/lib/types.ts`):
 - task `status`: `backlog`, `in_progress`, `review`, `done` · `priority`: `high`, `medium`, `low`
-- `assignee` / `owner`: `Claude`, `Gemini`, `Human` · `project`: `JDG`, `Spolka`, `Meta Ads`, `Webinar`, `Forms`, `English Expansion`, `Video Education`
+- `assignee` / `owner`: `Claude`, `Gemini`, `Human` · `project`: `JDG`, `Spolka`, `Meta Ads`, `Webinar`, `Forms`, `English Expansion`, `Video Education`, `Marketing`
 - optional task scheduling: `scheduledDate` (`YYYY-MM-DD`), `scheduledTime` (`HH:MM`, needs a date), `durationMinutes` (15–720)
 - content `format`: `Reels`, `Screen recording`, `Blog` · `status`: `idea`, `scripted`, `recorded`, `published`
-- `projects/*.md` may start with a `---` block containing `title:` and `summary:`
+- `projects/*.md` may start with a `---` block containing `title:`, `summary:` and optional `status:` / `category:`
 
 Brand tokens (`brand`, `ink`, `canvas`, …) are defined in `src/app/globals.css` under `@theme`.
 

@@ -10,7 +10,7 @@ export const metadata: Metadata = { title: "Проекты · IMOSTA Command Cen
 const STATUS_LABEL: Record<string, string> = { active: "Активный" };
 
 // Pages with a custom UI under src/app/projects/<slug>/ rather than a projects/*.md file.
-const CUSTOM_PAGES: Pick<ProjectDoc, "slug" | "title" | "summary" | "status">[] = [
+const CUSTOM_PAGES: Pick<ProjectDoc, "slug" | "title" | "summary" | "status" | "category">[] = [
   { slug: "english-expansion", title: "English-speaking expansion", summary: "Strategy & SOP: market pivot, Tandem team profile, hard skills, monthly SLA" },
 ];
 
@@ -34,6 +34,7 @@ export default function ProjectsPage() {
                 </span>
               )}
             </div>
+            {d.category && <p className="mb-1 text-[11px] font-semibold uppercase tracking-wider text-ink-subtle">{d.category}</p>}
             <h2 className="font-bold">{d.title}</h2>
             {d.summary && <p className="mt-1 flex-1 text-sm text-ink-muted">{d.summary}</p>}
             <span className="mt-4 inline-flex items-center gap-1 text-xs font-semibold text-ink-subtle group-hover:text-brand">

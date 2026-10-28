@@ -1,7 +1,7 @@
 export const STATUSES = ["backlog", "in_progress", "review", "done"] as const;
 export const PRIORITIES = ["high", "medium", "low"] as const;
 export const ASSIGNEES = ["Claude", "Gemini", "Human"] as const;
-export const PROJECTS = ["JDG", "Spolka", "Meta Ads", "Webinar", "Forms", "English Expansion", "Video Education"] as const;
+export const PROJECTS = ["JDG", "Spolka", "Meta Ads", "Webinar", "Forms", "English Expansion", "Video Education", "Marketing"] as const;
 
 export type Status = (typeof STATUSES)[number];
 export type Priority = (typeof PRIORITIES)[number];
@@ -48,6 +48,7 @@ export interface ProjectDoc {
   title: string;
   summary: string;
   status?: string; // frontmatter, e.g. "active"
+  category?: string; // frontmatter, e.g. "Marketing & Tech"
   body: string;
 }
 

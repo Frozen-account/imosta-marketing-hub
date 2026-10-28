@@ -91,7 +91,7 @@ export function getContentPlan(): ContentItem[] {
   });
 }
 
-// Minimal frontmatter: a leading `---` block of `key: value` lines (title, summary, status).
+// Minimal frontmatter: a leading `---` block of `key: value` lines (title, summary, status, category).
 function parseDoc(slug: string, raw: string): ProjectDoc {
   const match = /^---\r?\n([\s\S]*?)\r?\n---\r?\n?/.exec(raw);
   const meta: Record<string, string> = {};
@@ -103,7 +103,7 @@ function parseDoc(slug: string, raw: string): ProjectDoc {
   }
   const body = match ? raw.slice(match[0].length) : raw;
   const heading = /^#\s+(.+)$/m.exec(body)?.[1];
-  return { slug, title: meta.title || heading || slug, summary: meta.summary || "", status: meta.status || undefined, body };
+  return { slug, title: meta.title || heading || slug, summary: meta.summary || "", status: meta.status || undefined, category: meta.category || undefined, body };
 }
 
 export function getProjectDocs(): ProjectDoc[] {

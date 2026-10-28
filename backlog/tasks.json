@@ -122,5 +122,47 @@
     "notes": "Сбор базы конкурентов в Варшаве и Польше (русскоязычные демпингующие vs международные TMF/Accace/SDZLEGAL): анализ прайсинга, требований к KYC, SLA и каналов лидогенерации.",
     "link": "/projects/competitor-benchmarking",
     "scheduledDate": "2026-10-28"
+  },
+  {
+    "id": "geo-technical-setup",
+    "title": "GEO: Внедрить llms.txt, Schema.org JSON-LD и robots.txt на imosta.pl",
+    "status": "in_progress",
+    "priority": "high",
+    "assignee": "Claude",
+    "project": "Marketing",
+    "tags": ["geo", "frontend", "imosta.pl", "schema"],
+    "link": "/projects/geo-ai-optimization",
+    "scheduledDate": "2026-10-28"
+  },
+  {
+    "id": "geo-direct-faq",
+    "title": "GEO: Написать 15 фактологических Q&A для прямого цитирования ИИ",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Gemini",
+    "project": "Marketing",
+    "tags": ["geo", "content", "faq", "ksef"],
+    "notes": "Черновик — Gemini, проверка формулировок — Татьяна Бакаева.",
+    "link": "/projects/geo-ai-optimization"
+  },
+  {
+    "id": "geo-eeat-authors",
+    "title": "GEO: Оформить профили экспертов с сертификатами (E-E-A-T)",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "Marketing",
+    "tags": ["geo", "eeat", "trust"],
+    "link": "/projects/geo-ai-optimization"
+  },
+  {
+    "id": "geo-nap-citations",
+    "title": "GEO: Синхронизировать NAP и каталоги (Google Business, Panorama, Clutch)",
+    "status": "backlog",
+    "priority": "low",
+    "assignee": "Human",
+    "project": "Marketing",
+    "tags": ["geo", "citations", "clutch"],
+    "link": "/projects/geo-ai-optimization"
   }
 ]
