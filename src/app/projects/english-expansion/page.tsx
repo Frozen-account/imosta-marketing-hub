@@ -302,6 +302,23 @@ export default function EnglishExpansionPage() {
               </tbody>
             </table>
           </Card>
+
+          <Card className="mt-4 flex flex-col gap-4 md:flex-row md:items-center">
+            <Search className="size-6 shrink-0 text-brand" aria-hidden />
+            <div lang="ru" className="flex-1">
+              <h3 className="font-bold">Бенчмаркинг рынка (RU vs EN сегменты)</h3>
+              <p className="mt-1 text-sm text-ink-muted">
+                Русскоязычные бюро (50+, 700–1 000 PLN, демпинг) против международных фирм (TMF, Accace, getsix, CGO Group, SDZLEGAL — 1 500–3 500+ PLN, жёсткий онбординг).
+                Ниша IMOSTA: boutique English accounting с enterprise-уровнем compliance по цене SME. Сравнение по 8 критериям и методика сбора данных.
+              </p>
+            </div>
+            <Link
+              href="/projects/competitor-benchmarking"
+              className="inline-flex shrink-0 items-center gap-1.5 rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-brand-dark hover:shadow-md"
+            >
+              Открыть <ArrowRight className="size-4" aria-hidden />
+            </Link>
+          </Card>
         </Section>
 
         <Section n={2} title="Accountant & account manager profile" icon={Users}>
