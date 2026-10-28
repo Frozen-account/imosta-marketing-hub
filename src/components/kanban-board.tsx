@@ -18,7 +18,7 @@ const ASSIGNEE_STYLE: Record<Assignee, { cls: string; icon: typeof Bot }> = {
   Human: { cls: "bg-muted text-ink ring-line", icon: User },
 };
 
-const PRIORITY: Record<Priority, { label: string; dot: string; text: string }> = {
+export const PRIORITY: Record<Priority, { label: string; dot: string; text: string }> = {
   high: { label: "High", dot: "bg-brand", text: "text-brand" },
   medium: { label: "Medium", dot: "bg-amber-500", text: "text-amber-700" },
   low: { label: "Low", dot: "bg-gray-400", text: "text-ink-muted" },

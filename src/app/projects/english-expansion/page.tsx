@@ -8,10 +8,17 @@ import { GlossaryTable, type GlossaryEntry } from "@/components/glossary-table";
 
 export const metadata: Metadata = { title: "English Expansion · IMOSTA Command Center" };
 
+// Keep these figures identical to projects/competitor-benchmarking.md.
 const PRICING = [
   { segment: "Russian-speaking market, Warsaw", price: "700 – 1,000 PLN", note: "50+ competitors, price war", highlight: false },
   { segment: "IMOSTA English-speaking offer", price: "1,200 – 2,000+ PLN", note: "Target: higher margin, premium service", highlight: true },
-  { segment: "Corporate firms (TMF, Accace)", price: "3,000 – 5,000 PLN", note: "Our undercut benchmark", highlight: false },
+  { segment: "International firms (TMF, Accace, getsix, CGO Group, SDZLEGAL)", price: "2,500 – 4,500+ PLN", note: "Our undercut benchmark", highlight: false },
+];
+
+const TIERS = [
+  { name: "Starter", price: "1,200 PLN", scope: "Up to 10 documents / month" },
+  { name: "Growth", price: "1,600 – 1,800 PLN", scope: "IT / SaaS, VAT-UE, up to 25 documents / month" },
+  { name: "Scale", price: "2,200+ PLN", scope: "Higher volume and complex cross-border structures" },
 ];
 
 const GLOSSARY: GlossaryEntry[] = [
@@ -238,7 +245,7 @@ export default function EnglishExpansionPage() {
             <Card className="border-l-4 border-l-brand">
               <p className="mb-1 flex items-center gap-2 text-xs font-bold uppercase tracking-wider text-brand"><AlertTriangle className="size-4" aria-hidden /> Problem · Red Ocean</p>
               <p className="text-sm leading-relaxed">
-                The Russian-speaking accounting market in Warsaw is saturated: <strong>50+ active competitors</strong> and price pressure down to <strong>700–1,000 PLN/mo</strong>.
+                The Russian-speaking accounting market in Warsaw is saturated: <strong>50+ active competitors</strong> and price pressure down to <strong>700 – 1,000 PLN/mo</strong>.
               </p>
             </Card>
             <Card className="border-l-4 border-l-emerald-600">
@@ -303,13 +310,26 @@ export default function EnglishExpansionPage() {
             </table>
           </Card>
 
+          <div className="mt-4">
+            <p className="mb-2 text-sm font-bold">IMOSTA pricing tiers · <span className="text-brand">1,200 – 2,000+ PLN</span></p>
+            <div className="grid gap-3 sm:grid-cols-3">
+              {TIERS.map((t, i) => (
+                <Card key={t.name} className={i === 1 ? "border-brand ring-1 ring-brand" : ""}>
+                  <p className="text-xs font-bold uppercase tracking-wider text-ink-muted">{t.name}</p>
+                  <p className="mt-1 text-xl font-extrabold tabular-nums text-brand">{t.price}<span className="text-xs font-semibold text-ink-muted"> / mo</span></p>
+                  <p className="mt-1 text-sm text-ink-subtle">{t.scope}</p>
+                </Card>
+              ))}
+            </div>
+          </div>
+
           <Card className="mt-4 flex flex-col gap-4 md:flex-row md:items-center">
             <Search className="size-6 shrink-0 text-brand" aria-hidden />
             <div lang="ru" className="flex-1">
               <h3 className="font-bold">Бенчмаркинг рынка (RU vs EN сегменты)</h3>
               <p className="mt-1 text-sm text-ink-muted">
-                Русскоязычные бюро (50+, 700–1 000 PLN, демпинг) против международных фирм (TMF, Accace, getsix, CGO Group, SDZLEGAL — 1 500–3 500+ PLN, жёсткий онбординг).
-                Ниша IMOSTA: boutique English accounting с enterprise-уровнем compliance по цене SME. Сравнение по 8 критериям и методика сбора данных.
+                Русскоязычные бюро (50+, 700 – 1,000 PLN, демпинг) против международных фирм (TMF, Accace, getsix, CGO Group, SDZLEGAL — 2,500 – 4,500+ PLN, жёсткий онбординг).
+                Ниша IMOSTA: boutique English accounting с enterprise-уровнем compliance по цене SME — 1,200 – 2,000+ PLN. Сравнение по 8 критериям и методика сбора данных.
               </p>
             </div>
             <Link

@@ -2,12 +2,13 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, FolderOpen, KanbanSquare, LogOut } from "lucide-react";
+import { BarChart3, CalendarDays, Clapperboard, FolderOpen, KanbanSquare, LogOut } from "lucide-react";
 
 const NAV = [
   { href: "/tasks", label: "Задачи", icon: KanbanSquare },
+  { href: "/schedule", label: "Календарь", icon: CalendarDays },
   { href: "/projects", label: "Проекты", icon: FolderOpen },
-  { href: "/content", label: "Контент-план", icon: CalendarDays },
+  { href: "/content", label: "Контент-план", icon: Clapperboard },
   { href: "/analytics", label: "Аналитика", icon: BarChart3 },
 ] as const;
 

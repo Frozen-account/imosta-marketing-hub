@@ -24,6 +24,8 @@ export interface Task {
   durationMinutes?: number;
 }
 
+export type Schedule = Pick<Task, "scheduledDate" | "scheduledTime" | "durationMinutes">;
+
 export const CONTENT_FORMATS = ["Reels", "Screen recording", "Blog"] as const;
 export const CONTENT_STATUSES = ["idea", "scripted", "recorded", "published"] as const;
 
