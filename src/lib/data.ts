@@ -47,6 +47,15 @@ export function getTasks(): Task[] {
     if (due && !/^\d{4}-\d{2}(-\d{2})?$/.test(due)) fail(TASKS_FILE, i, `"due" must be YYYY-MM or YYYY-MM-DD`);
     const link = str(TASKS_FILE, i, r, "link", true);
     if (link && !link.startsWith("/")) fail(TASKS_FILE, i, `"link" must be an internal path starting with /`);
+    const scheduledDate = str(TASKS_FILE, i, r, "scheduledDate", true);
+    const scheduledTime = str(TASKS_FILE, i, r, "scheduledTime", true);
+    const duration = r.durationMinutes;
+    if (scheduledDate && !/^\d{4}-\d{2}-\d{2}$/.test(scheduledDate)) fail(TASKS_FILE, i, `"scheduledDate" must be YYYY-MM-DD`);
+    if (scheduledTime && !scheduledDate) fail(TASKS_FILE, i, `"scheduledTime" requires "scheduledDate"`);
+    if (scheduledTime && !/^([01]\d|2[0-3]):[0-5]\d$/.test(scheduledTime)) fail(TASKS_FILE, i, `"scheduledTime" must be HH:MM (24h)`);
+    if (duration !== undefined && (!Number.isInteger(duration) || (duration as number) < 15 || (duration as number) > 720)) {
+      fail(TASKS_FILE, i, `"durationMinutes" must be an integer between 15 and 720`);
+    }
     return {
       id: str(TASKS_FILE, i, r, "id")!,
       title: str(TASKS_FILE, i, r, "title")!,
@@ -58,6 +67,9 @@ export function getTasks(): Task[] {
       notes: str(TASKS_FILE, i, r, "notes", true),
       due,
       link,
+      scheduledDate,
+      scheduledTime,
+      durationMinutes: duration as number | undefined,
     };
   });
 }

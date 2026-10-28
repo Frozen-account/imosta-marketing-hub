@@ -26,6 +26,17 @@ const PRIORITY: Record<Priority, { label: string; dot: string; text: string }> =
 
 const PRIORITY_ORDER: Record<Priority, number> = { high: 0, medium: 1, low: 2 };
 
+// "28 окт., 14:00–15:00" or just "28 окт." for date-only tasks.
+function formatSlot({ scheduledDate, scheduledTime, durationMinutes }: Task) {
+  const [y, m, d] = scheduledDate!.split("-").map(Number);
+  const day = new Date(y, m - 1, d).toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
+  if (!scheduledTime) return day;
+  const [h, min] = scheduledTime.split(":").map(Number);
+  const end = h * 60 + min + (durationMinutes ?? 60);
+  const endStr = `${String(Math.floor(end / 60) % 24).padStart(2, "0")}:${String(end % 60).padStart(2, "0")}`;
+  return `${day}, ${scheduledTime}–${endStr}`;
+}
+
 function formatDue(due: string) {
   const [y, m, d] = due.split("-").map(Number);
   const date = new Date(y, m - 1, d ?? 1);
@@ -108,7 +119,11 @@ function TaskCard({ task }: { task: Task }) {
         <span className={`inline-flex items-center gap-1 rounded-md px-2 py-0.5 font-semibold ring-1 ${a.cls}`}>
           <AssigneeIcon className="size-3" aria-hidden /> {task.assignee}
         </span>
-        {task.due && (
+        {task.scheduledDate ? (
+          <span className="ml-auto inline-flex items-center gap-1 font-semibold text-ink-subtle">
+            <CalendarClock className="size-3.5 text-brand" aria-hidden /> {formatSlot(task)}
+          </span>
+        ) : task.due && (
           <span className="ml-auto inline-flex items-center gap-1 text-ink-muted">
             <CalendarClock className="size-3.5" aria-hidden /> {formatDue(task.due)}
           </span>

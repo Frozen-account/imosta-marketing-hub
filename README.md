@@ -20,7 +20,8 @@ Files are validated at build time (`src/lib/data.ts`); an invalid status, assign
 
 Allowed values (see `src/lib/types.ts`):
 - task `status`: `backlog`, `in_progress`, `review`, `done` · `priority`: `high`, `medium`, `low`
-- `assignee` / `owner`: `Claude`, `Gemini`, `Human` · `project`: `JDG`, `Spolka`, `Meta Ads`, `Webinar`, `Forms`
+- `assignee` / `owner`: `Claude`, `Gemini`, `Human` · `project`: `JDG`, `Spolka`, `Meta Ads`, `Webinar`, `Forms`, `English Expansion`, `Video Education`
+- optional task scheduling: `scheduledDate` (`YYYY-MM-DD`), `scheduledTime` (`HH:MM`, needs a date), `durationMinutes` (15–720)
 - content `format`: `Reels`, `Screen recording`, `Blog` · `status`: `idea`, `scripted`, `recorded`, `published`
 - `projects/*.md` may start with a `---` block containing `title:` and `summary:`
 

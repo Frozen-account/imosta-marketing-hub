@@ -52,7 +52,7 @@
     "status": "backlog",
     "priority": "high",
     "assignee": "Human",
-    "project": "EN Expansion",
+    "project": "English Expansion",
     "tags": ["strategy", "hiring", "en", "spolka", "startups"],
     "notes": "Offer from 1,200 PLN/mo. Confirm SLA vs statutory deadlines with Head of Accounting.",
     "link": "/projects/english-expansion"
@@ -97,5 +97,30 @@
     "project": "Spolka",
     "tags": ["video", "vat", "import"],
     "link": "/projects/video-education"
+  },
+  {
+    "id": "reels-filming-alena",
+    "title": "Видео-съемка Reels с Аленой",
+    "status": "in_progress",
+    "priority": "high",
+    "assignee": "Human",
+    "project": "Video Education",
+    "tags": ["video", "reels", "alena", "production"],
+    "link": "/projects/video-education",
+    "scheduledDate": "2026-10-28",
+    "scheduledTime": "14:00",
+    "durationMinutes": 60
+  },
+  {
+    "id": "competitor-benchmarking",
+    "title": "Бенчмаркинг бухгалтерских бюро (тарифы, офферы EN, каналы)",
+    "status": "backlog",
+    "priority": "high",
+    "assignee": "Human",
+    "project": "English Expansion",
+    "tags": ["research", "benchmarking", "pricing", "competitors"],
+    "notes": "Сбор базы конкурентов в Варшаве и Польше (русскоязычные демпингующие vs международные TMF/Accace/SDZLEGAL): анализ прайсинга, требований к KYC, SLA и каналов лидогенерации.",
+    "link": "/projects/competitor-benchmarking",
+    "scheduledDate": "2026-10-28"
   }
 ]
