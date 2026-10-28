@@ -4,15 +4,22 @@ import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import {
   CalendarPlus, ChevronLeft, ChevronRight, ClipboardCopy, Clock, ExternalLink, Inbox, PanelRightClose,
-  PanelRightOpen, RotateCcw, X,
+  PanelRightOpen, Plus, RotateCcw, Trash2, X,
 } from "lucide-react";
 import { PRIORITY } from "@/components/kanban-board";
-import type { Schedule, Task } from "@/lib/types";
+import {
+  ASSIGNEES, PRIORITIES, PROJECTS, STATUSES,
+  type Assignee, type Priority, type Project, type Schedule, type Status, type Task,
+} from "@/lib/types";
 
 const START_HOUR = 8;
 const END_HOUR = 20;
 const HOUR_PX = 64;
 const STORAGE_KEY = "imosta-hub:schedule:v1";
+const CREATED_KEY = "imosta-hub:schedule:new-tasks:v1";
+// Hover-only controls stay visible on touch screens, which have no hover.
+const REVEAL = "opacity-0 transition-opacity group-hover:opacity-100 focus-visible:opacity-100 [@media(hover:none)]:opacity-100";
+const STATUS_LABEL: Record<Status, string> = { backlog: "Backlog", in_progress: "In Progress", review: "Review", done: "Done" };
 const TIME_OPTIONS = Array.from({ length: (END_HOUR - START_HOUR) * 2 }, (_, i) => {
   const m = START_HOUR * 60 + i * 30;
   return `${String(Math.floor(m / 60)).padStart(2, "0")}:${String(m % 60).padStart(2, "0")}`;
@@ -34,20 +41,40 @@ const toMinutes = (hhmm: string) => { const [h, m] = hhmm.split(":").map(Number)
 const fmtTime = (mins: number) => `${String(Math.floor(mins / 60)).padStart(2, "0")}:${String(mins % 60).padStart(2, "0")}`;
 const fmtShort = (d: Date) => d.toLocaleDateString("ru-RU", { day: "numeric", month: "short" });
 
-function loadOverrides(): Overrides {
+function loadJson(key: string): unknown {
   try {
-    const raw = window.localStorage.getItem(STORAGE_KEY);
-    const data: unknown = raw ? JSON.parse(raw) : {};
-    return data && typeof data === "object" && !Array.isArray(data) ? (data as Overrides) : {};
+    const raw = window.localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : undefined;
   } catch {
-    return {};
+    return undefined;
   }
 }
 
-function saveOverrides(o: Overrides) {
+function saveJson(key: string, value: unknown) {
   try {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(o));
+    window.localStorage.setItem(key, JSON.stringify(value));
   } catch {}
+}
+
+function loadOverrides(): Overrides {
+  const data = loadJson(STORAGE_KEY);
+  return data && typeof data === "object" && !Array.isArray(data) ? (data as Overrides) : {};
+}
+
+function loadCreated(): Task[] {
+  const data = loadJson(CREATED_KEY);
+  return Array.isArray(data) ? data.filter((t) => typeof t?.id === "string" && typeof t?.title === "string" && Array.isArray(t?.tags)) : [];
+}
+
+// Readable, unique ids for tasks.json: "Созвон с клиентом UK" -> "sozvon-s-klientom-uk".
+const CYR = "абвгдеёжзийклмнопрстуфхцчшщъыьэюяіїєґ";
+const LAT = ["a", "b", "v", "g", "d", "e", "e", "zh", "z", "i", "y", "k", "l", "m", "n", "o", "p", "r", "s", "t", "u", "f", "h", "ts", "ch", "sh", "sch", "", "y", "", "e", "yu", "ya", "i", "yi", "ye", "g"];
+function makeId(title: string, taken: Set<string>) {
+  const base = [...title.toLowerCase()].map((c) => (CYR.includes(c) ? LAT[CYR.indexOf(c)] : c)).join("")
+    .replace(/[^a-z0-9]+/g, "-").replace(/^-+|-+$/g, "").slice(0, 48).replace(/-+$/, "") || "task";
+  let id = base;
+  for (let n = 2; taken.has(id); n++) id = `${base}-${n}`;
+  return id;
 }
 
 function applyOverrides(tasks: Task[], overrides: Overrides): Task[] {
@@ -91,6 +118,8 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
   const [now, setNow] = useState<Date | null>(null);
   const [view, setView] = useState<"week" | "day">("week");
   const [editing, setEditing] = useState<Task | null>(null);
+  const [created, setCreated] = useState<Task[]>([]); // tasks added from the calendar, not yet in tasks.json
+  const [creating, setCreating] = useState<Schedule | null>(null); // prefill for the "new task" dialog
   const [trayOpen, setTrayOpen] = useState(true);
   const [allPriorities, setAllPriorities] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -105,26 +134,36 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
     setNow(d);
     setAnchor(new Date(d.getFullYear(), d.getMonth(), d.getDate()));
     setOverrides(loadOverrides());
+    setCreated(loadCreated());
     setLoaded(true);
     const timer = window.setInterval(() => setNow(new Date()), 60_000);
     return () => window.clearInterval(timer);
   }, []);
 
   useEffect(() => {
-    if (loaded) saveOverrides(overrides);
+    if (loaded) saveJson(STORAGE_KEY, overrides);
   }, [overrides, loaded]);
 
-  const merged = useMemo(() => applyOverrides(tasks, overrides), [tasks, overrides]);
+  useEffect(() => {
+    if (loaded) saveJson(CREATED_KEY, created);
+  }, [created, loaded]);
+
+  const merged = useMemo(() => applyOverrides([...tasks, ...created], overrides), [tasks, created, overrides]);
+  const isNew = (id: string) => created.some((t) => t.id === id);
   const days = anchor ? (view === "week" ? Array.from({ length: 7 }, (_, i) => addDays(mondayOf(anchor), i)) : [anchor]) : [];
   const todayIso = now ? iso(now) : "";
   const unscheduled = merged.filter((t) => !t.scheduledDate && t.status !== "done" && (allPriorities || t.priority === "high"));
-  const changeCount = Object.keys(overrides).length;
+  const changeCount = Object.keys(overrides).length + created.length;
 
   const shift = (dir: number) => setAnchor((a) => (a ? addDays(a, dir * (view === "week" ? 7 : 1)) : a));
   const goToday = () => now && setAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
 
-  // A change that lands back on the tasks.json value is not a pending change.
-  const setSchedule = (id: string, s: Schedule | null) =>
+  // New tasks are edited in place; for tasks.json tasks, a change that lands back on the file value is not a pending change.
+  const setSchedule = (id: string, s: Schedule | null) => {
+    if (isNew(id)) {
+      setCreated((c) => c.map((t) => (t.id === id ? { ...t, scheduledDate: s?.scheduledDate, scheduledTime: s?.scheduledTime, durationMinutes: s?.durationMinutes } : t)));
+      return;
+    }
     setOverrides((o) => {
       const orig = tasks.find((t) => t.id === id);
       const same =
@@ -137,7 +176,21 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
       else n[id] = s;
       return n;
     });
+  };
   const resetTask = (id: string) => setOverrides((o) => { const n = { ...o }; delete n[id]; return n; });
+
+  const createTask = (draft: Omit<Task, "id">) => {
+    const task = { id: makeId(draft.title, new Set(merged.map((t) => t.id))), ...draft };
+    setCreated((c) => [...c, task]);
+    setCreating(null);
+    if (task.scheduledDate) {
+      const [y, m, d] = task.scheduledDate.split("-").map(Number);
+      setAnchor(new Date(y, m - 1, d)); // show the new task even if it was dated outside the visible range
+    } else {
+      setTrayOpen(true);
+      if (task.priority !== "high") setAllPriorities(true);
+    }
+  };
 
   // --- drag & drop (native HTML5; touch devices keep using the dialog) ---
   const endDrag = () => { setDragId(null); setDropTarget(null); };
@@ -230,13 +283,20 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
 
       {changeCount > 0 && (
         <div className="mb-4 flex flex-wrap items-center gap-3 rounded-lg border border-amber-200 bg-amber-50 px-4 py-2.5 text-sm text-amber-900">
-          <span><strong>{changeCount}</strong> изм. сохранено только в этом браузере. Чтобы команда их увидела, скопируйте JSON в <code className="text-xs">backlog/tasks.json</code> и закоммитьте.</span>
+          <span>
+            <strong>{changeCount}</strong> изм.{created.length > 0 && <> (из них новых задач: {created.length})</>} сохранено только в этом браузере.
+            Чтобы команда их увидела, скопируйте JSON в <code className="text-xs">backlog/tasks.json</code> и закоммитьте.
+          </span>
           <div className="ml-auto flex gap-2">
             <button onClick={copyJson} className="inline-flex items-center gap-1.5 rounded-md bg-surface px-2.5 py-1 font-semibold ring-1 ring-amber-300 hover:bg-amber-100">
               <ClipboardCopy className="size-4" aria-hidden /> {copied ? "Скопировано" : "Скопировать JSON"}
             </button>
             <button
-              onClick={() => window.confirm("Отменить все локальные изменения расписания?") && setOverrides({})}
+              onClick={() => {
+                if (!window.confirm("Отменить все локальные изменения расписания и удалить новые задачи?")) return;
+                setOverrides({});
+                setCreated([]);
+              }}
               className="inline-flex items-center gap-1.5 rounded-md px-2.5 py-1 font-semibold hover:bg-amber-100"
             >
               <RotateCcw className="size-4" aria-hidden /> Сбросить
@@ -254,17 +314,26 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
               {days.map((d) => {
                 const isToday = iso(d) === todayIso;
                 return (
-                  <button
-                    key={iso(d)}
-                    onClick={() => { setAnchor(d); setView("day"); }}
-                    className={`border-l border-line px-2 py-2.5 text-left transition-colors hover:bg-canvas ${isToday ? "bg-brand-soft/60" : ""}`}
-                    title="Открыть день"
-                  >
-                    <span className={`block text-xs font-bold uppercase tracking-wider ${isToday ? "text-brand" : "text-ink-muted"}`}>
-                      {d.toLocaleDateString("ru-RU", { weekday: "short" })}
-                    </span>
-                    <span className={`text-lg font-extrabold tabular-nums ${isToday ? "text-brand" : ""}`}>{d.getDate()}</span>
-                  </button>
+                  <div key={iso(d)} className={`group relative border-l border-line ${isToday ? "bg-brand-soft/60" : ""}`}>
+                    <button
+                      onClick={() => { setAnchor(d); setView("day"); }}
+                      className="w-full px-2 py-2.5 text-left transition-colors hover:bg-canvas/70"
+                      title="Открыть день"
+                    >
+                      <span className={`block text-xs font-bold uppercase tracking-wider ${isToday ? "text-brand" : "text-ink-muted"}`}>
+                        {d.toLocaleDateString("ru-RU", { weekday: "short" })}
+                      </span>
+                      <span className={`text-lg font-extrabold tabular-nums ${isToday ? "text-brand" : ""}`}>{d.getDate()}</span>
+                    </button>
+                    <button
+                      onClick={() => setCreating({ scheduledDate: iso(d) })}
+                      aria-label={`Новая задача на ${fmtShort(d)}`}
+                      title="Новая задача на этот день"
+                      className={`absolute right-1.5 top-1.5 rounded-md p-1 text-ink-muted hover:bg-brand hover:text-white ${REVEAL}`}
+                    >
+                      <Plus className="size-4" />
+                    </button>
+                  </div>
                 );
               })}
             </div>
@@ -294,6 +363,7 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
                       >
                         <span className={`size-1.5 shrink-0 rounded-full ${PRIORITY[t.priority].dot}`} aria-hidden />
                         <span className="line-clamp-2 flex-1">{t.title}</span>
+                        {isNew(t.id) && <NewBadge />}
                         <CalendarPlus className="size-3.5 shrink-0 text-brand" aria-hidden />
                       </button>
                     ))}
@@ -330,9 +400,25 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
                     className={`relative border-l border-line ${isToday ? "bg-brand-soft/20" : ""}`}
                     style={{ height: (END_HOUR - START_HOUR) * HOUR_PX }}
                   >
-                    {Array.from({ length: END_HOUR - START_HOUR }, (_, i) => (
-                      <div key={i} className="absolute inset-x-0 border-t border-line/70" style={{ top: i * HOUR_PX }} aria-hidden />
-                    ))}
+                    {/* Hour slots: grid lines that double as "new task at HH:00" (blocks render on top, so only empty space reacts) */}
+                    {Array.from({ length: END_HOUR - START_HOUR }, (_, i) => {
+                      const time = `${String(START_HOUR + i).padStart(2, "0")}:00`;
+                      return (
+                        <button
+                          key={i}
+                          type="button"
+                          tabIndex={-1}
+                          onClick={() => setCreating({ scheduledDate: key, scheduledTime: time, durationMinutes: 60 })}
+                          aria-label={`Новая задача: ${fmtShort(d)}, ${time}`}
+                          className="group/slot absolute inset-x-0 flex items-start border-t border-line/70 p-1 text-left"
+                          style={{ top: i * HOUR_PX, height: HOUR_PX }}
+                        >
+                          <span className="inline-flex items-center gap-0.5 rounded-md bg-brand/10 px-1.5 py-0.5 text-[11px] font-bold text-brand opacity-0 transition-opacity group-hover/slot:opacity-100 tabular-nums">
+                            <Plus className="size-3" aria-hidden /> {time}
+                          </span>
+                        </button>
+                      );
+                    })}
                     {hoverHour !== null && (
                       <div
                         className="pointer-events-none absolute inset-x-1 z-30 rounded-lg border-2 border-dashed border-brand/60 bg-brand/10 px-1.5 py-1 text-[11px] font-bold text-brand tabular-nums"
@@ -375,6 +461,7 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
                             {initiative && initiative !== projectLabel && (
                               <span className="rounded bg-muted px-1 py-px text-[10px] font-semibold text-ink-subtle ring-1 ring-line">{initiative}</span>
                             )}
+                            {isNew(b.task.id) && <NewBadge />}
                           </span>
                         </button>
                       );
@@ -415,7 +502,8 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
                   <p className="flex items-center gap-1.5 text-[11px] font-semibold">
                     <span className={`size-1.5 rounded-full ${PRIORITY[t.priority].dot}`} aria-hidden />
                     <span className={PRIORITY[t.priority].text}>{PRIORITY[t.priority].label}</span>
-                    <span className="ml-auto rounded bg-ink px-1 py-px text-[10px] text-white">{t.project}</span>
+                    {isNew(t.id) && <span className="ml-auto"><NewBadge /></span>}
+                    <span className={`${isNew(t.id) ? "" : "ml-auto "}rounded bg-ink px-1 py-px text-[10px] text-white`}>{t.project}</span>
                   </p>
                   <p className="mt-1 text-sm font-semibold leading-snug">{t.title}</p>
                   <button
@@ -440,30 +528,23 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
           onClose={() => setEditing(null)}
           onSave={(s) => { setSchedule(editing.id, s); setEditing(null); }}
           onReset={() => { resetTask(editing.id); setEditing(null); }}
+          onDelete={isNew(editing.id) ? () => { setCreated((c) => c.filter((t) => t.id !== editing.id)); setEditing(null); } : undefined}
         />
       )}
+
+      {creating && <CreateTaskDialog initial={creating} onClose={() => setCreating(null)} onCreate={createTask} />}
     </div>
   );
 }
 
+function NewBadge() {
+  return <span className="shrink-0 rounded bg-amber-100 px-1 py-px text-[10px] font-semibold text-amber-800 ring-1 ring-amber-200">новая</span>;
+}
+
 const fieldCls = "w-full rounded-lg border border-line bg-surface px-3 py-2 text-sm focus:border-brand focus:outline-none focus:ring-1 focus:ring-brand";
+const labelCls = "text-xs font-semibold text-ink-muted";
 
-function ScheduleDialog({ task, defaultDate, overridden, onClose, onSave, onReset }: {
-  task: Task;
-  defaultDate: string;
-  overridden: boolean;
-  onClose: () => void;
-  onSave: (s: Schedule | null) => void;
-  onReset: () => void;
-}) {
-  const [date, setDate] = useState(task.scheduledDate ?? defaultDate);
-  const [time, setTime] = useState(task.scheduledTime && TIME_OPTIONS.includes(task.scheduledTime) ? task.scheduledTime : "10:00");
-  const [duration, setDuration] = useState(task.durationMinutes ?? 60);
-  // Date-only tasks open with a time selected, since the point is usually to assign one.
-  const [allDay, setAllDay] = useState(false);
-  const pr = PRIORITY[task.priority];
-  const endsLate = toMinutes(time) + duration > END_HOUR * 60;
-
+function DialogFrame({ labelledBy, onClose, children }: { labelledBy: string; onClose: () => void; children: React.ReactNode }) {
   useEffect(() => {
     const onKey = (e: KeyboardEvent) => e.key === "Escape" && onClose();
     window.addEventListener("keydown", onKey);
@@ -475,10 +556,35 @@ function ScheduleDialog({ task, defaultDate, overridden, onClose, onSave, onRese
       <div
         role="dialog"
         aria-modal="true"
-        aria-labelledby="schedule-title"
+        aria-labelledby={labelledBy}
         onClick={(e) => e.stopPropagation()}
         className="max-h-[90vh] w-full max-w-lg overflow-y-auto rounded-xl border-t-4 border-t-brand bg-surface p-5 shadow-2xl"
       >
+        {children}
+      </div>
+    </div>
+  );
+}
+
+function ScheduleDialog({ task, defaultDate, overridden, onClose, onSave, onReset, onDelete }: {
+  task: Task;
+  defaultDate: string;
+  overridden: boolean;
+  onClose: () => void;
+  onSave: (s: Schedule | null) => void;
+  onReset: () => void;
+  onDelete?: () => void; // only for tasks created in this browser
+}) {
+  const [date, setDate] = useState(task.scheduledDate ?? defaultDate);
+  const [time, setTime] = useState(task.scheduledTime && TIME_OPTIONS.includes(task.scheduledTime) ? task.scheduledTime : "10:00");
+  const [duration, setDuration] = useState(task.durationMinutes ?? 60);
+  // Date-only tasks open with a time selected, since the point is usually to assign one.
+  const [allDay, setAllDay] = useState(false);
+  const pr = PRIORITY[task.priority];
+  const endsLate = toMinutes(time) + duration > END_HOUR * 60;
+
+  return (
+    <DialogFrame labelledBy="schedule-title" onClose={onClose}>
         <div className="flex items-start gap-3">
           <h2 id="schedule-title" className="flex-1 text-lg font-bold leading-snug">{task.title}</h2>
           <button onClick={onClose} aria-label="Закрыть" className="rounded-md p-1 text-ink-muted hover:text-ink"><X className="size-5" /></button>
@@ -527,6 +633,15 @@ function ScheduleDialog({ task, defaultDate, overridden, onClose, onSave, onRese
           </label>
           {!allDay && endsLate && <p className="mt-2 text-xs text-amber-700">Блок заканчивается после 20:00 — в сетке он будет обрезан.</p>}
           <div className="mt-5 flex flex-wrap items-center gap-2">
+            {onDelete && (
+              <button
+                type="button"
+                onClick={() => window.confirm("Удалить новую задачу?") && onDelete()}
+                className="inline-flex items-center gap-1.5 rounded-lg px-3 py-2 text-sm font-semibold text-ink-muted hover:text-brand"
+              >
+                <Trash2 className="size-4" aria-hidden /> Удалить
+              </button>
+            )}
             {task.scheduledDate && (
               <button type="button" onClick={() => onSave(null)} className="rounded-lg px-3 py-2 text-sm font-semibold text-ink-muted hover:text-brand">Снять с расписания</button>
             )}
@@ -537,7 +652,101 @@ function ScheduleDialog({ task, defaultDate, overridden, onClose, onSave, onRese
             <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-brand-dark hover:shadow-md">Сохранить</button>
           </div>
         </form>
+    </DialogFrame>
+  );
+}
+
+function CreateTaskDialog({ initial, onClose, onCreate }: {
+  initial: Schedule;
+  onClose: () => void;
+  onCreate: (task: Omit<Task, "id">) => void;
+}) {
+  const [title, setTitle] = useState("");
+  const [project, setProject] = useState<Project>("Marketing");
+  const [priority, setPriority] = useState<Priority>("medium");
+  const [status, setStatus] = useState<Status>("backlog");
+  const [assignee, setAssignee] = useState<Assignee>("Human");
+  const [date, setDate] = useState(initial.scheduledDate ?? "");
+  const [time, setTime] = useState(initial.scheduledTime ?? "");
+  const [duration, setDuration] = useState(initial.durationMinutes ?? 60);
+  const [notes, setNotes] = useState("");
+  const [tags, setTags] = useState("");
+  const timed = Boolean(date && time);
+  const outsideGrid = timed && (toMinutes(time) < START_HOUR * 60 || toMinutes(time) + duration > END_HOUR * 60);
+
+  return (
+    <DialogFrame labelledBy="create-title" onClose={onClose}>
+      <div className="flex items-start gap-3">
+        <h2 id="create-title" className="flex flex-1 items-center gap-2 text-lg font-bold"><Plus className="size-5 text-brand" aria-hidden /> Новая задача</h2>
+        <button onClick={onClose} aria-label="Закрыть" className="rounded-md p-1 text-ink-muted hover:text-ink"><X className="size-5" /></button>
       </div>
-    </div>
+      <form
+        className="mt-4 grid grid-cols-1 gap-3 sm:grid-cols-2"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!title.trim()) return;
+          // Field order and validation mirror backlog/tasks.json (see src/lib/data.ts).
+          onCreate({
+            title: title.trim(),
+            status,
+            priority,
+            assignee,
+            project,
+            tags: [...new Set(tags.split(",").map((t) => t.trim().replace(/^#/, "")).filter(Boolean))],
+            ...(notes.trim() && { notes: notes.trim() }),
+            ...(date && { scheduledDate: date }),
+            ...(timed && { scheduledTime: time, durationMinutes: Math.min(Math.max(Math.round(duration / 15) * 15, 15), 720) }),
+          });
+        }}
+      >
+        <label className={`${labelCls} sm:col-span-2`}>Название *
+          <input autoFocus required value={title} onChange={(e) => setTitle(e.target.value)} placeholder="Созвон с клиентом UK" className={`mt-1 ${fieldCls}`} />
+        </label>
+        <label className={labelCls}>Проект
+          <select value={project} onChange={(e) => setProject(e.target.value as Project)} className={`mt-1 ${fieldCls}`}>
+            {PROJECTS.map((p) => <option key={p}>{p}</option>)}
+          </select>
+        </label>
+        <label className={labelCls}>Исполнитель
+          <select value={assignee} onChange={(e) => setAssignee(e.target.value as Assignee)} className={`mt-1 ${fieldCls}`}>
+            {ASSIGNEES.map((a) => <option key={a}>{a}</option>)}
+          </select>
+        </label>
+        <label className={labelCls}>Приоритет
+          <select value={priority} onChange={(e) => setPriority(e.target.value as Priority)} className={`mt-1 ${fieldCls}`}>
+            {PRIORITIES.map((p) => <option key={p} value={p}>{PRIORITY[p].label}</option>)}
+          </select>
+        </label>
+        <label className={labelCls}>Статус
+          <select value={status} onChange={(e) => setStatus(e.target.value as Status)} className={`mt-1 ${fieldCls}`}>
+            {STATUSES.map((s) => <option key={s} value={s}>{STATUS_LABEL[s]}</option>)}
+          </select>
+        </label>
+        <div className="grid grid-cols-3 gap-3 sm:col-span-2">
+          <label className={labelCls}>Дата
+            <input type="date" value={date} onChange={(e) => setDate(e.target.value)} className={`mt-1 ${fieldCls}`} />
+          </label>
+          <label className={labelCls}>Время
+            <input type="time" step={900} value={time} disabled={!date} onChange={(e) => setTime(e.target.value)} className={`mt-1 ${fieldCls} disabled:opacity-50`} />
+          </label>
+          <label className={labelCls}>Минут
+            <input type="number" min={15} max={720} step={15} value={duration} disabled={!timed} onChange={(e) => setDuration(Number(e.target.value))} className={`mt-1 ${fieldCls} disabled:opacity-50`} />
+          </label>
+        </div>
+        <p className="-mt-1 text-xs text-ink-subtle sm:col-span-2">
+          {!date ? "Без даты задача попадёт в «Без времени»." : !time ? "Без времени — в строку «Весь день»." : outsideGrid ? <span className="text-amber-700">Блок выходит за сетку 08:00–20:00 и будет обрезан.</span> : null}
+        </p>
+        <label className={`${labelCls} sm:col-span-2`}>Заметки
+          <textarea rows={3} value={notes} onChange={(e) => setNotes(e.target.value)} className={`mt-1 ${fieldCls}`} />
+        </label>
+        <label className={`${labelCls} sm:col-span-2`}>Теги (через запятую)
+          <input value={tags} onChange={(e) => setTags(e.target.value)} placeholder="sales, uk, call" className={`mt-1 ${fieldCls}`} />
+        </label>
+        <div className="mt-2 flex items-center gap-2 sm:col-span-2">
+          <button type="button" onClick={onClose} className="ml-auto rounded-lg px-4 py-2 text-sm font-semibold text-ink-muted hover:text-ink">Отмена</button>
+          <button type="submit" className="rounded-lg bg-brand px-4 py-2 text-sm font-bold text-white shadow-sm transition-all duration-200 hover:bg-brand-dark hover:shadow-md">Создать</button>
+        </div>
+      </form>
+    </DialogFrame>
   );
 }
