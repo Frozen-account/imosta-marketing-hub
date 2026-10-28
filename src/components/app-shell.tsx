@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { BarChart3, CalendarDays, FolderOpen, KanbanSquare } from "lucide-react";
+import { BarChart3, CalendarDays, FolderOpen, KanbanSquare, LogOut } from "lucide-react";
 
 const NAV = [
   { href: "/tasks", label: "Задачи", icon: KanbanSquare },
@@ -13,6 +13,15 @@ const NAV = [
 
 export function AppShell({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+
+  if (pathname === "/login") return <>{children}</>;
+
+  async function logout() {
+    await fetch("/api/auth", { method: "DELETE" }).catch(() => {});
+    // Full reload on purpose: drops the client router cache so protected pages aren't shown from memory.
+    // eslint-disable-next-line @next/next/no-location-assign-relative-destination
+    window.location.assign("/login");
+  }
 
   return (
     <div className="flex min-h-screen flex-col md:flex-row">
@@ -44,6 +53,13 @@ export function AppShell({ children }: { children: React.ReactNode }) {
               </Link>
             );
           })}
+          <button
+            onClick={logout}
+            className="flex shrink-0 items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-white/50 transition-all duration-200 hover:bg-white/10 hover:text-white md:mt-6"
+          >
+            <LogOut className="size-4" aria-hidden />
+            Выйти
+          </button>
         </nav>
       </aside>
       <main className="min-w-0 flex-1 px-4 py-6 md:px-8 md:py-8">{children}</main>
