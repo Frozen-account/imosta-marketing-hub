@@ -42,6 +42,7 @@ export interface ProjectDoc {
   slug: string;
   title: string;
   summary: string;
+  status?: string; // frontmatter, e.g. "active"
   body: string;
 }
 

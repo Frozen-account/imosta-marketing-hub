@@ -56,5 +56,46 @@
     "tags": ["strategy", "hiring", "en", "spolka", "startups"],
     "notes": "Offer from 1,200 PLN/mo. Confirm SLA vs statutory deadlines with Head of Accounting.",
     "link": "/projects/english-expansion"
+  },
+  {
+    "id": "video-kasa-fiskalna",
+    "title": "Снять видео-разбор: Чек-лист по кассовым аппаратам (kasa fiskalna)",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "Forms",
+    "tags": ["video", "education", "support"],
+    "link": "/projects/video-education"
+  },
+  {
+    "id": "video-wakacje-zus",
+    "title": "Снять пошаговый гайд: Оформление Wakacje ZUS в PUE",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "JDG",
+    "tags": ["video", "zus", "jdg"],
+    "link": "/projects/video-education"
+  },
+  {
+    "id": "video-ksef-descriptions",
+    "title": "Видео + памятка клиентам: Детализация названий на фактурах под KSeF 2.0",
+    "status": "backlog",
+    "priority": "high",
+    "assignee": "Human",
+    "project": "Spolka",
+    "tags": ["video", "ksef", "compliance"],
+    "notes": "Риски KSeF и ссылку на art. 106e ust. 1 pkt 7 согласовать с Татьяной до съёмки.",
+    "link": "/projects/video-education"
+  },
+  {
+    "id": "video-import-vat-customs",
+    "title": "Видео-инструкция: Таможенные декларации (PZC) для зачета импортного VAT",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "Spolka",
+    "tags": ["video", "vat", "import"],
+    "link": "/projects/video-education"
   }
 ]
