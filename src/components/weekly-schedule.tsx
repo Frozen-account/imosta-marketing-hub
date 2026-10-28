@@ -94,6 +94,9 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
   const [trayOpen, setTrayOpen] = useState(true);
   const [allPriorities, setAllPriorities] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [dragId, setDragId] = useState<string | null>(null);
+  // "allday:<date>" | "slot:<date>:<hour>" | "tray"
+  const [dropTarget, setDropTarget] = useState<string | null>(null);
 
   // Dates and browser storage are client-only, so prerendering never depends on build time.
   useEffect(() => {
@@ -120,8 +123,60 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
   const shift = (dir: number) => setAnchor((a) => (a ? addDays(a, dir * (view === "week" ? 7 : 1)) : a));
   const goToday = () => now && setAnchor(new Date(now.getFullYear(), now.getMonth(), now.getDate()));
 
-  const setSchedule = (id: string, s: Schedule | null) => setOverrides((o) => ({ ...o, [id]: s }));
+  // A change that lands back on the tasks.json value is not a pending change.
+  const setSchedule = (id: string, s: Schedule | null) =>
+    setOverrides((o) => {
+      const orig = tasks.find((t) => t.id === id);
+      const same =
+        orig &&
+        (orig.scheduledDate ?? null) === (s?.scheduledDate ?? null) &&
+        (orig.scheduledTime ?? null) === (s?.scheduledTime ?? null) &&
+        (orig.durationMinutes ?? null) === (s?.durationMinutes ?? null);
+      const n = { ...o };
+      if (same) delete n[id];
+      else n[id] = s;
+      return n;
+    });
   const resetTask = (id: string) => setOverrides((o) => { const n = { ...o }; delete n[id]; return n; });
+
+  // --- drag & drop (native HTML5; touch devices keep using the dialog) ---
+  const endDrag = () => { setDragId(null); setDropTarget(null); };
+  const dragProps = (t: Task) => ({
+    draggable: true,
+    onDragStart: (e: React.DragEvent<HTMLElement>) => {
+      e.dataTransfer.setData("text/plain", t.id);
+      e.dataTransfer.effectAllowed = "move";
+      setDragId(t.id);
+    },
+    onDragEnd: endDrag,
+  });
+  const dragCls = (t: Task) => `cursor-grab active:cursor-grabbing ${dragId === t.id ? "opacity-50" : ""}`;
+
+  // Only react to our own task drags, not files or text dragged in from outside.
+  const over = (key: string) => (e: React.DragEvent<HTMLElement>) => {
+    if (!dragId) return;
+    e.preventDefault();
+    e.dataTransfer.dropEffect = "move";
+    setDropTarget(key);
+  };
+  const leave = (key: string) => (e: React.DragEvent<HTMLElement>) => {
+    if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropTarget((c) => (c === key ? null : c));
+  };
+  const drop = (toSchedule: (t: Task) => Schedule | null) => (e: React.DragEvent<HTMLElement>) => {
+    e.preventDefault();
+    const task = merged.find((t) => t.id === (e.dataTransfer.getData("text/plain") || dragId));
+    if (task) {
+      setSchedule(task.id, toSchedule(task));
+      if (!toSchedule(task) && task.priority !== "high") setAllPriorities(true); // keep it visible in the tray
+    }
+    endDrag();
+  };
+  const hourAt = (e: React.DragEvent<HTMLElement>) => {
+    const h = START_HOUR + Math.floor((e.clientY - e.currentTarget.getBoundingClientRect().top) / HOUR_PX);
+    return Math.min(Math.max(h, START_HOUR), END_HOUR - 1);
+  };
+  const dragged = dragId ? merged.find((t) => t.id === dragId) : undefined;
+  const dropCls = (key: string) => (dropTarget === key ? "bg-brand/10 ring-1 ring-inset ring-brand/40" : "");
 
   async function copyJson() {
     const text = JSON.stringify(merged, null, 2) + "\n";
@@ -218,15 +273,24 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
             <div className="grid border-b border-line bg-canvas/60" style={{ gridTemplateColumns: `3.5rem repeat(${Math.max(days.length, 1)}, minmax(0, 1fr))` }}>
               <div className="flex items-start justify-end px-2 py-2 text-right text-[10px] font-bold uppercase leading-tight tracking-wider text-ink-muted">Весь<br />день</div>
               {days.map((d) => {
-                const allDay = merged.filter((t) => t.scheduledDate === iso(d) && !t.scheduledTime);
+                const date = iso(d);
+                const allDay = merged.filter((t) => t.scheduledDate === date && !t.scheduledTime);
+                const key = `allday:${date}`;
                 return (
-                  <div key={iso(d)} className="flex min-h-10 flex-col gap-1 border-l border-line p-1">
+                  <div
+                    key={date}
+                    onDragOver={over(key)}
+                    onDragLeave={leave(key)}
+                    onDrop={drop(() => ({ scheduledDate: date }))}
+                    className={`flex min-h-10 flex-col gap-1 border-l border-line p-1 transition-colors duration-150 ${dropCls(key)}`}
+                  >
                     {allDay.map((t) => (
                       <button
                         key={t.id}
+                        {...dragProps(t)}
                         onClick={() => setEditing(t)}
-                        title="Назначить время"
-                        className="flex items-center gap-1.5 rounded-md border border-dashed border-brand/50 bg-surface px-1.5 py-1 text-left text-[11px] font-semibold leading-snug transition-colors hover:border-brand hover:bg-brand-soft/40"
+                        title="Назначить время или перетащить"
+                        className={`flex items-center gap-1.5 rounded-md border border-dashed border-brand/50 bg-surface px-1.5 py-1 text-left text-[11px] font-semibold leading-snug transition-colors hover:border-brand hover:bg-brand-soft/40 ${dragCls(t)}`}
                       >
                         <span className={`size-1.5 shrink-0 rounded-full ${PRIORITY[t.priority].dot}`} aria-hidden />
                         <span className="line-clamp-2 flex-1">{t.title}</span>
@@ -252,11 +316,35 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
                 const blocks = layoutDay(merged.filter((t) => t.scheduledDate === key && t.scheduledTime));
                 const nowMin = now ? now.getHours() * 60 + now.getMinutes() : -1;
                 const showNow = isToday && nowMin >= START_HOUR * 60 && nowMin <= END_HOUR * 60;
+                const slotPrefix = `slot:${key}:`;
+                const hoverHour = dropTarget?.startsWith(slotPrefix) ? Number(dropTarget.slice(slotPrefix.length)) : null;
                 return (
-                  <div key={key} className={`relative border-l border-line ${isToday ? "bg-brand-soft/20" : ""}`} style={{ height: (END_HOUR - START_HOUR) * HOUR_PX }}>
+                  <div
+                    key={key}
+                    onDragOver={(e) => over(`${slotPrefix}${hourAt(e)}`)(e)}
+                    onDragLeave={(e) => { if (!e.currentTarget.contains(e.relatedTarget as Node | null)) setDropTarget((c) => (c?.startsWith(slotPrefix) ? null : c)); }}
+                    onDrop={(e) => {
+                      const time = `${String(hourAt(e)).padStart(2, "0")}:00`;
+                      drop((t) => ({ scheduledDate: key, scheduledTime: time, durationMinutes: t.durationMinutes ?? 60 }))(e);
+                    }}
+                    className={`relative border-l border-line ${isToday ? "bg-brand-soft/20" : ""}`}
+                    style={{ height: (END_HOUR - START_HOUR) * HOUR_PX }}
+                  >
                     {Array.from({ length: END_HOUR - START_HOUR }, (_, i) => (
                       <div key={i} className="absolute inset-x-0 border-t border-line/70" style={{ top: i * HOUR_PX }} aria-hidden />
                     ))}
+                    {hoverHour !== null && (
+                      <div
+                        className="pointer-events-none absolute inset-x-1 z-30 rounded-lg border-2 border-dashed border-brand/60 bg-brand/10 px-1.5 py-1 text-[11px] font-bold text-brand tabular-nums"
+                        style={{
+                          top: (hoverHour - START_HOUR) * HOUR_PX,
+                          height: (Math.min(dragged?.durationMinutes ?? 60, (END_HOUR - hoverHour) * 60) / 60) * HOUR_PX,
+                        }}
+                        aria-hidden
+                      >
+                        {String(hoverHour).padStart(2, "0")}:00
+                      </div>
+                    )}
                     {blocks.map((b) => {
                       const top = ((Math.max(b.start, START_HOUR * 60) - START_HOUR * 60) / 60) * HOUR_PX;
                       const bottom = ((Math.min(b.end, END_HOUR * 60) - START_HOUR * 60) / 60) * HOUR_PX;
@@ -266,8 +354,9 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
                       return (
                         <button
                           key={b.task.id}
+                          {...dragProps(b.task)}
                           onClick={() => setEditing(b.task)}
-                          className="absolute overflow-hidden rounded-lg border border-line border-l-4 bg-surface p-1.5 text-left shadow-sm transition-all duration-200 hover:z-10 hover:shadow-md"
+                          className={`absolute overflow-hidden rounded-lg border border-line border-l-4 bg-surface p-1.5 text-left shadow-sm transition-all duration-200 hover:z-10 hover:shadow-md ${dragCls(b.task)}`}
                           style={{
                             top: top + 1,
                             height: Math.max(bottom - top - 2, 22),
@@ -305,15 +394,24 @@ export function WeeklySchedule({ tasks }: { tasks: Task[] }) {
 
         {/* Unscheduled tray */}
         {trayOpen && (
-          <aside className="flex flex-col rounded-xl border border-line bg-surface p-4 shadow-sm" aria-label="Задачи без времени">
+          <aside
+            onDragOver={(e) => { if (dragged?.scheduledDate) over("tray")(e); }}
+            onDragLeave={leave("tray")}
+            onDrop={drop(() => null)}
+            className={`flex flex-col rounded-xl border border-line bg-surface p-4 shadow-sm transition-colors duration-150 ${dropCls("tray")}`}
+            aria-label="Задачи без времени"
+          >
             <h2 className="flex items-center gap-2 font-bold"><Inbox className="size-4 text-brand" aria-hidden /> Без времени</h2>
             <label className="mt-2 flex items-center gap-2 text-xs text-ink-muted">
               <input type="checkbox" checked={allPriorities} onChange={(e) => setAllPriorities(e.target.checked)} className="accent-[var(--color-brand)]" />
               Показать все приоритеты (не только High)
             </label>
             <ul className="mt-3 flex flex-col gap-2">
+              {dropTarget === "tray" && (
+                <li className="rounded-lg border-2 border-dashed border-brand/60 bg-brand/10 p-3 text-center text-xs font-bold text-brand">Отпустите, чтобы снять с расписания</li>
+              )}
               {unscheduled.map((t) => (
-                <li key={t.id} className="rounded-lg border border-line bg-canvas p-3">
+                <li key={t.id} {...dragProps(t)} className={`rounded-lg border border-line bg-canvas p-3 ${dragCls(t)}`}>
                   <p className="flex items-center gap-1.5 text-[11px] font-semibold">
                     <span className={`size-1.5 rounded-full ${PRIORITY[t.priority].dot}`} aria-hidden />
                     <span className={PRIORITY[t.priority].text}>{PRIORITY[t.priority].label}</span>
