@@ -107,8 +107,8 @@
     "project": "Video Education",
     "tags": ["video", "reels", "alena", "production"],
     "link": "/projects/video-education",
-    "scheduledDate": "2026-10-28",
-    "scheduledTime": "14:00",
+    "scheduledDate": "2026-10-29",
+    "scheduledTime": "12:30",
     "durationMinutes": 60
   },
   {
@@ -121,7 +121,9 @@
     "tags": ["research", "benchmarking", "pricing", "competitors"],
     "notes": "Сбор базы конкурентов в Варшаве и Польше (русскоязычные демпингующие vs международные TMF/Accace/SDZLEGAL): анализ прайсинга, требований к KYC, SLA и каналов лидогенерации.",
     "link": "/projects/competitor-benchmarking",
-    "scheduledDate": "2026-10-28"
+    "scheduledDate": "2026-10-29",
+    "scheduledTime": "15:00",
+    "durationMinutes": 60
   },
   {
     "id": "geo-technical-setup",
@@ -132,7 +134,9 @@
     "project": "Marketing",
     "tags": ["geo", "frontend", "imosta.pl", "schema"],
     "link": "/projects/geo-ai-optimization",
-    "scheduledDate": "2026-10-28"
+    "scheduledDate": "2026-10-29",
+    "scheduledTime": "14:00",
+    "durationMinutes": 60
   },
   {
     "id": "geo-direct-faq",
@@ -164,5 +168,29 @@
     "project": "Marketing",
     "tags": ["geo", "citations", "clutch"],
     "link": "/projects/geo-ai-optimization"
+  },
+  {
+    "id": "natariush-saska-parizhska",
+    "title": "НАТАРИУШЬ - Саска (Парижска)",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "Marketing",
+    "tags": [],
+    "scheduledDate": "2026-10-30",
+    "scheduledTime": "13:00",
+    "durationMinutes": 180
+  },
+  {
+    "id": "smm-posty-na-nedelyu",
+    "title": "SMM - Посты на неделю",
+    "status": "backlog",
+    "priority": "medium",
+    "assignee": "Human",
+    "project": "Marketing",
+    "tags": [],
+    "scheduledDate": "2026-10-29",
+    "scheduledTime": "11:00",
+    "durationMinutes": 60
   }
 ]
